@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Parking System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .slot {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+        .slot.available {
+            background-color: #e0ffe0;
+        }
+        .slot.occupied {
+            background-color: #ffe0e0;
+        }
+        .messages {
+            margin-bottom: 15px;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .message.success {
+            background-color: #e0ffe0;
+            border: 1px solid #00b300;
+        }
+        .message.error {
+            background-color: #ffe0e0;
+            border: 1px solid #ff4d4d;
+        }
+        .message.info {
+            background-color: #e0f7ff;
+            border: 1px solid #0099cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Parking System</h1>
+
+        <div class="messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <h2>Parking Lot Status</h2>
+        <div>
+            {% for slot, status in parking_lot.items() %}
+                <div class="slot {{ 'available' if status else 'occupied' }}">
+                    <span>Slot {{ slot }}</span>
+                    <span>{{ 'Available' if status else 'Occupied' }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        <h2>Actions</h2>
+        <form action="/book" method="post" style="margin-bottom: 10px;">
+            <label for="slot-book">Book Slot:</label>
+            <input type="text" id="slot-book" name="slot" required>
+            <button type="submit">Book</button>
+        </form>
+
+        <form action="/release" method="post">
+            <label for="slot-release">Release Slot:</label>
+            <input type="text" id="slot-release" name="slot" required>
+            <button type="submit">Release</button>
+        </form>
+    </div>
+</body>
+</html>
