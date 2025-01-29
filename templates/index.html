@@ -51,6 +51,27 @@
             background-color: #e0f7ff;
             border: 1px solid #0099cc;
         }
+         
+        
+
+        .exit-btn {
+            background-color: #d9534f;
+            color: white;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .exit-btn:hover {
+            background-color: #c9302c; /* Darker red */
+            transform: scale(1.05); /* Slight zoom effect */
+        }
     </style>
 </head>
 <body>
@@ -89,6 +110,13 @@
             <input type="text" id="slot-release" name="slot" required>
             <button type="submit">Release</button>
         </form>
+
+        <form action="/logout" method="post">
+            <button type="submit" class="exit-btn">
+                Exit
+            </button>
+        </form>
+        
     </div>
 </body>
 </html>

@@ -21,6 +21,10 @@ def redirect():
   else:
     return render_template('index1.html')
   
+@app.route('/logout',methods=['POST'])
+def logout():
+    return render_template('index1.html')
+  
 @app.route('/book', methods=['POST'])
 def book_slot():
     slot = request.form.get('slot')
