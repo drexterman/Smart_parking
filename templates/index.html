@@ -8,122 +8,122 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
             margin: 20px;
         }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
+        h1 {
+            color: #333;
         }
         table {
-            width: 100%;
+            width: 60%;
+            margin: auto;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            background-color: white;
         }
         th, td {
+            border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
-            border: 1px solid #ddd;
         }
         th {
-            background-color: #f0f0f0;
+            background-color: #4CAF50;
+            color: white;
         }
-        .available {
-            background-color: #e0ffe0;
-            color: green;
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin: 10px auto;
+            width: 50%;
         }
-        .occupied {
-            background-color: #ffe0e0;
-            color: red;
-        }
-        .messages {
-            margin-bottom: 15px;
-        }
-        .message {
+        .flash-messages li {
             padding: 10px;
             border-radius: 5px;
-            margin-bottom: 5px;
+            margin: 5px 0;
+            font-weight: bold;
         }
-        .message.success {
-            background-color: #e0ffe0;
-            border: 1px solid #00b300;
-        }
-        .message.error {
-            background-color: #ffe0e0;
-            border: 1px solid #ff4d4d;
-        }
-        .message.info {
-            background-color: #e0f7ff;
-            border: 1px solid #0099cc;
-        }
-        .exit-btn {
-            background-color: #d9534f;
-            color: white;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-            margin-top: 20px;
-            padding: 12px 20px;
+        .success { background-color: #4CAF50; color: white; }
+        .error { background-color: #f44336; color: white; }
+        .info { background-color: #2196F3; color: white; }
+        button {
+            padding: 8px 12px;
             border: none;
             cursor: pointer;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            border-radius: 5px;
         }
-        .exit-btn:hover {
-            background-color: #c9302c;
-            transform: scale(1.05);
-        }
+        .book-btn { background-color: #4CAF50; color: white; }
+        .book-btn:disabled { background-color: gray; }
+        .release-btn { background-color: #ff9800; color: white; }
+        .queue-btn { background-color: #ff9800; color: white; }
+        .logout-btn { background-color: #f44336; color: white; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Smart Parking System</h1>
 
-        <div class="messages">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+    <h1>Welcome to the Smart Parking System</h1>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="flash-messages">
                 {% for category, message in messages %}
-                    <div class="message {{ category }}">{{ message }}</div>
+                    <li class="{{ category }}">{{ message }}</li>
                 {% endfor %}
-            {% endif %}
-            {% endwith %}
-        </div>
+            </ul>
+        {% endif %}
+    {% endwith %}
 
-        <h2>Parking Lot Status</h2>
-        <table>
-            <tr>
-                <th>Slot</th>
-                <th>Status</th>
-            </tr>
-            {% for slot, available in parking_lot.items() %}
-            <tr class="{{ 'available' if available else 'occupied' }}">
-                <td>{{ slot }}</td>
-                <td>{{ 'Available' if available else 'Occupied' }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+    <h2>Available Parking Slots</h2>
 
-        <h2>Actions</h2>
-        <form action="/book" method="post" style="margin-bottom: 10px;">
-            <label for="slot-book">Book Slot:</label>
-            <input type="text" id="slot-book" name="slot" required>
-            <button type="submit">Book</button>
+    <table>
+        <tr>
+            <th>Slot Name</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        {% for slot, available in parking_lot.items() %}
+        <tr>
+            <td>{{ slot }}</td>
+            <td>{{ "Available" if available else "Occupied" }}</td>
+            <td>
+                {% if available %}
+                    <form action="/book" method="post" style="display: inline;">
+                        <input type="hidden" name="slot" value="{{ slot }}">
+                        <button type="submit" class="book-btn">Book Slot</button>
+                    </form>
+                {% else %}
+                    <form action="/release" method="post" style="display: inline;">
+                        <input type="hidden" name="slot" value="{{ slot }}">
+                        <button type="submit" class="release-btn">Release Slot</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+
+
+    <form action="/add_to_queue" method="post">
+        <input type="hidden" name="user_id" value="{{ user_id }}">
+        <button type="submit" class="queue-btn">Join Waiting Queue</button>
+    </form>
+
+    <br>
+    
+
+
+        <form action="/remove_from_queue" method="post">
+            <input type="hidden" name="user_id" value="{{ user_id }}">
+            <button type="submit" class="queue-btn">Remove from Waiting Queue</button>
         </form>
+    <br>
 
-        <form action="/release" method="post">
-            <label for="slot-release">Release Slot:</label>
-            <input type="text" id="slot-release" name="slot" required>
-            <button type="submit">Release</button>
-        </form>
 
-        <form action="/logout" method="post">
-            <button type="submit" class="exit-btn">
-                Exit
-            </button>
-        </form>
-    </div>
+    <form action="/logout" method="post">
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+
 </body>
 </html>
