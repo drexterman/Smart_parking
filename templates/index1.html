@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
+    <title>Login/Signup Page</title>
     <style>
+        /* Your existing styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -60,12 +61,25 @@
         .login-container .success {
             color: #5cb85c; /* Success green */
         }
+        .toggle-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .toggle-container a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .toggle-container a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h1>Login</h1>
-        <form method="POST" action="/login">
+        <h1 id="form-title">Login</h1>
+        
+        <!-- Login Form -->
+        <form id="login-form" method="POST" action="/login">
             <label for="user_id">User ID</label>
             <input type="text" id="user_id" name="user_id" placeholder="Enter your user ID" required>
             
@@ -74,6 +88,48 @@
             
             <button type="submit">Login</button>
         </form>
+
+        <!-- Signup Form (Initially hidden) -->
+        <form id="signup-form" method="POST" action="/signup" style="display: none;">
+            <label for="new_user_id">User ID</label>
+            <input type="text" id="new_user_id" name="new_user_id" placeholder="Enter your user ID" required>
+            
+            <label for="new_password">Password</label>
+            <input type="password" id="new_password" name="new_password" placeholder="Enter your password" required>
+            
+            <button type="submit">Signup</button>
+        </form>
+
+        <div class="toggle-container">
+            <a href="#" id="toggle-link">Don't have an account? Signup</a>
+        </div>
     </div>
+
+    <script>
+        document.getElementById("toggle-link").addEventListener("click", function (event) {
+            event.preventDefault();
+            var loginForm = document.getElementById("login-form");
+            var signupForm = document.getElementById("signup-form");
+            var formTitle = document.getElementById("form-title");
+            
+            if (loginForm.style.display === "none") {
+                loginForm.style.display = "block";
+                signupForm.style.display = "none";
+                formTitle.innerText = "Login";
+                this.innerText = "Don't have an account? Signup";
+            } else {
+                loginForm.style.display = "none";
+                signupForm.style.display = "block";
+                formTitle.innerText = "Signup";
+                this.innerText = "Already have an account? Login";
+            }
+        });
+        window.onload = function() {
+            var message = "{{ get_flashed_messages()[0] if get_flashed_messages() else '' }}";
+            if (message) {
+                alert(message);
+            }
+        };
+    </script>
 </body>
 </html>

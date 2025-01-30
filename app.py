@@ -1,9 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+import pymysql
 
 app = Flask(__name__)
 app.secret_key = "smart_parking_secret"
 
 parking_lot = {"A1": False, "A2": True, "B1": True, "B2": False}  # True = Available, False = Occupied
+
+
+#db connection
+db= pymysql.connect(
+    host="localhost",
+    user="root",
+    password="root",
+    database="smart_parking"
+)
+cursor=db.cursor()
 
 @app.route('/')
 def home():
@@ -11,15 +22,49 @@ def home():
 
 
 @app.route('/login', methods=['POST'])
-def redirect():
-  user_id=request.form.get('user_id')
-  pw=request.form.get('password')
-  if user_id=="software" and  pw=="shrulep":
-    return render_template('index.html', parking_lot=parking_lot)
+# def redirect():
+#   user_id=request.form.get('user_id')
+#   pw=request.form.get('password')
+#   if user_id=="software" and  pw=="shrulep":
+#     return render_template('index.html', parking_lot=parking_lot)
     
 
-  else:
-    return render_template('index1.html')
+#   else:
+#     return render_template('index1.html')
+def redirect():
+    user_id=request.form.get('user_id')
+    pw=request.form.get('password')
+
+    cursor.execute("select * FROM users WHERE name=%s and password=%s",(user_id,pw))
+
+    user=cursor.fetchone()
+
+    if user:
+        return render_template('index.html',parking_lot=parking_lot)
+    else:
+        flash("Invalid login credentials.","error")
+        return render_template('index1.html')
+
+@app.route('/signup',methods=['POST'])
+def signup():
+    user_id=request.form.get('new_user_id')
+    pw=request.form.get('new_password')
+
+    cursor.execute("SELECT * FROM users where name=%s",(user_id,))
+    user=cursor.fetchone()
+
+    if user:
+        flash("user already exits","error")
+        return render_template('index1.html')
+    else:
+        cursor.execute("INSERT INTO users (name,password) VALUES (%s,%s)",(user_id,pw))
+        db.commit()
+        flash("new user created susccessfully","sucess")
+        return render_template('index1.html')
+
+
+
+
   
 @app.route('/logout',methods=['POST'])
 def logout():
