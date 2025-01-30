@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,19 +18,26 @@
             border-radius: 8px;
             background-color: #f9f9f9;
         }
-        .slot {
-            display: flex;
-            justify-content: space-between;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
             padding: 10px;
+            text-align: center;
             border: 1px solid #ddd;
-            margin-bottom: 5px;
-            border-radius: 5px;
         }
-        .slot.available {
+        th {
+            background-color: #f0f0f0;
+        }
+        .available {
             background-color: #e0ffe0;
+            color: green;
         }
-        .slot.occupied {
+        .occupied {
             background-color: #ffe0e0;
+            color: red;
         }
         .messages {
             margin-bottom: 15px;
@@ -51,15 +59,11 @@
             background-color: #e0f7ff;
             border: 1px solid #0099cc;
         }
-         
-        
-
         .exit-btn {
             background-color: #d9534f;
             color: white;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
             margin-top: 20px;
-
             padding: 12px 20px;
             border: none;
             cursor: pointer;
@@ -69,8 +73,8 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
         .exit-btn:hover {
-            background-color: #c9302c; /* Darker red */
-            transform: scale(1.05); /* Slight zoom effect */
+            background-color: #c9302c;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -89,14 +93,18 @@
         </div>
 
         <h2>Parking Lot Status</h2>
-        <div>
-            {% for slot, status in parking_lot.items() %}
-                <div class="slot {{ 'available' if status else 'occupied' }}">
-                    <span>Slot {{ slot }}</span>
-                    <span>{{ 'Available' if status else 'Occupied' }}</span>
-                </div>
+        <table>
+            <tr>
+                <th>Slot</th>
+                <th>Status</th>
+            </tr>
+            {% for slot, available in parking_lot.items() %}
+            <tr class="{{ 'available' if available else 'occupied' }}">
+                <td>{{ slot }}</td>
+                <td>{{ 'Available' if available else 'Occupied' }}</td>
+            </tr>
             {% endfor %}
-        </div>
+        </table>
 
         <h2>Actions</h2>
         <form action="/book" method="post" style="margin-bottom: 10px;">
@@ -116,7 +124,6 @@
                 Exit
             </button>
         </form>
-        
     </div>
 </body>
 </html>
