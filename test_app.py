@@ -6,16 +6,16 @@ class TestApp(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
         self.app.testing = True
-        self.reset_parking_data()  # Reset parking slots to initial state
+    #     self.reset_parking_data()  # Reset parking slots to initial state
 
-    def reset_parking_data(self):
-        # Manually reset the state of parking slots to avoid test contamination
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("UPDATE parking_lots SET status = TRUE")  # Reset all slots to available
-        conn.commit()
-        cur.close()
-        conn.close()
+    # def reset_parking_data(self):
+    #     # Manually reset the state of parking slots to avoid test contamination
+    #     conn = get_db_connection()
+    #     cur = conn.cursor()
+    #     cur.execute("UPDATE parking_lots SET status = TRUE")  # Reset all slots to available
+    #     conn.commit()
+    #     cur.close()
+    #     conn.close()
 
     def test_get_parking_data(self):
         # Call the function to test
@@ -138,11 +138,23 @@ class TestApp(unittest.TestCase):
 
 
     # booking an already booked slot
-
+    def test_booking_already_booked_slot(self):
+        # Book a slot
+        self.app.post('/book', data=dict(slot='A1'))
+        # Try to book the same slot again
+        response = self.app.post('/book', data=dict(slot='A1'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Slot A1 is already occupied.', response.data)
 
 
     # releasing a free slot
+    def test_releasing_free_slot(self):
+    # Try to release a slot that is already free
+        self.app.post('/release', data=dict(slot='A1'))
 
+        response = self.app.post('/release', data=dict(slot='A1'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Slot A1 is already available.', response.data)
 
 
 
