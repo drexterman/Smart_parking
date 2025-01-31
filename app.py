@@ -10,6 +10,7 @@ DB_CONFIG = {
     "dbname": "software_eng1",
     "user": "postgres",
     #removed password for security purposes
+    "password":"root",
     "host": "localhost",
     "port": "5432"
 }
