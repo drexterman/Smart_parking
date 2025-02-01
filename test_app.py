@@ -1,5 +1,14 @@
 import unittest
 from app import app, get_parking_data, get_db_connection
+import threading
+
+def book_slot_concurrently(client, slot, results, index):
+    response = client.post('/book', data=dict(slot=slot))
+    results[index] = response
+
+def release_slot_concurrently(client, slot, results, index):
+    response = client.post('/release', data=dict(slot=slot))
+    results[index] = response
 
 class TestApp(unittest.TestCase):
 
@@ -159,9 +168,60 @@ class TestApp(unittest.TestCase):
 
 
     # concurrent accesss
+    def test_concurrent_booking(self):
+        slot = 'A1'
+        num_threads = 5
+        threads = []
+        results = [None] * num_threads
+
+        self.app.post('/release', data=dict(slot=slot))
+        for i in range(num_threads):
+            thread = threading.Thread(target=book_slot_concurrently, args=(self.app, slot, results, i))
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        # print(results)
+        # Check that only one booking was successful and others failed
+        success_count = sum(1 for result in results if result.status_code == 200 and b'Slot A1 successfully booked!' in result.data)
+        failure_count = sum(1 for result in results if result.status_code == 200 and b'Slot A1 is already occupied.' in result.data)
+
+        print(f'Success: {success_count}, Failure: {failure_count}')
+        self.assertEqual(success_count, 1)
+        self.assertEqual(failure_count, num_threads - 1)
 
 
 
-    
+
+    #concurrent release
+    def test_concurrent_release(self):
+        slot = 'A1'
+        num_threads = 5
+        threads = []
+        results = [None] * num_threads
+
+        # Ensure the slot is occupied before testing
+        self.app.post('/book', data=dict(slot=slot))
+
+        for i in range(num_threads):
+            thread = threading.Thread(target=release_slot_concurrently, args=(self.app, slot, results, i))
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        # Check that only one release was successful and others failed
+        success_count = sum(1 for result in results if result.status_code == 200 and b'Slot A1 has been released.' in result.data)
+        failure_count = sum(1 for result in results if result.status_code == 200 and b'Slot A1 is already available.' in result.data)
+
+        print(f'Success: {success_count}, Failure: {failure_count}')
+        self.assertEqual(success_count, 1)
+        self.assertEqual(failure_count, num_threads - 1)
+
+
+
 if __name__ == '__main__':
     unittest.main()

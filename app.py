@@ -110,20 +110,26 @@ def book_slot():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT status FROM parking_lots WHERE lot_name = %s;", (slot,))
-    row = cur.fetchone()
+    try:
+        cur.execute("BEGIN;")
+        cur.execute("SELECT status FROM parking_lots WHERE lot_name = %s FOR UPDATE;", (slot,))
+        row = cur.fetchone()
 
-    if not row:
-        flash(f"Error: Slot '{slot}' does not exist.", 'error')
-    elif row[0] == "Occupied":
-        flash(f"Slot {slot} is already occupied.", 'error')
-    else:
-        cur.execute("UPDATE parking_lots SET status = 'Occupied' WHERE lot_name = %s;", (slot,))
-        conn.commit()
-        flash(f"Slot {slot} successfully booked!", 'success')
-
-    cur.close()
-    conn.close()
+        if not row:
+            flash(f"Error: Slot '{slot}' does not exist.", 'error')
+        elif row[0] == "Occupied":
+            flash(f"Slot {slot} is already occupied.", 'error')
+        else:
+            cur.execute("UPDATE parking_lots SET status = 'Occupied' WHERE lot_name = %s;", (slot,))
+            conn.commit()
+            flash(f"Slot {slot} successfully booked!", 'success')
+        cur.execute("COMMIT;")
+    except Exception as e:
+        cur.execute("ROLLBACK;")
+        flash(f"Error: {str(e)}", 'error')
+    finally:
+        cur.close()
+        conn.close()
 
     parking_lot = get_parking_data()
     return render_template("index.html", parking_lot=parking_lot)
@@ -135,23 +141,28 @@ def release_slot():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT status FROM parking_lots WHERE lot_name = %s;", (slot,))
-    row = cur.fetchone()
+    try:
+        cur.execute("BEGIN;")
+        cur.execute("SELECT status FROM parking_lots WHERE lot_name = %s FOR UPDATE;", (slot,))
+        row = cur.fetchone()
 
-    if not row:
-        flash(f"Error: Slot '{slot}' does not exist.", 'error')
-    elif row[0] == "Available":
-        flash(f"Slot {slot} is already available.", 'info')
-    else:
-        cur.execute("UPDATE parking_lots SET status = 'Available' WHERE lot_name = %s;", (slot,))
-        conn.commit()
-        flash(f"Slot {slot} has been released.", 'success')
-
-        # Notify the next user
-        notify_next_user()
-
-    cur.close()
-    conn.close()
+        if not row:
+            flash(f"Error: Slot '{slot}' does not exist.", 'error')
+        elif row[0] == "Available":
+            flash(f"Slot {slot} is already available.", 'info')
+        else:
+            cur.execute("UPDATE parking_lots SET status = 'Available' WHERE lot_name = %s;", (slot,))
+            conn.commit()
+            flash(f"Slot {slot} has been released.", 'success')
+            # Notify the next user
+            notify_next_user()
+        cur.execute("COMMIT;")
+    except Exception as e:
+        cur.execute("ROLLBACK;")
+        flash(f"Error: {str(e)}", 'error')
+    finally:
+        cur.close()
+        conn.close()
 
     parking_lot = get_parking_data()
     return render_template("index.html", parking_lot=parking_lot)
