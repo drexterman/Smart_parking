@@ -120,7 +120,15 @@ class TestApp(unittest.TestCase):
         # Assertions to verify the response
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'You have been removed from the waiting queue.', response.data)  # Adjusted to match actual message
-    
+
+    def test_book_nonexistent_slot(self):
+        # Send a POST request to release a nonexistent slot
+        response = self.app.post('/book', data=dict(slot='Z9'))
+        
+        # Assertions to verify the response
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Error: Slot &#39;Z9&#39; does not exist.", response.data)  # Adjusted to match actual message
+        
     def test_release_nonexistent_slot(self):
         # Send a POST request to release a nonexistent slot
         response = self.app.post('/release', data=dict(slot='Z9'))
